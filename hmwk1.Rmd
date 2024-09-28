@@ -1,0 +1,88 @@
+---
+title: "Homework 1"
+author: "Aaron Melcher
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
+library(tidyverse)
+library(ggplot2)
+```
+
+[NYC Flights]
+```{r}
+library(nycflights13)
+flights |> select(carrier, air_time, distance)
+```
+
+Part A
+```{r}
+flights <- mutate(flights,
+  speed = distance / air_time
+)
+```
+
+
+Part B
+```{r}
+ggplot(flights, aes(carrier, speed)) +
+  geom_boxplot()
+``` 
+The boxplot above provides a very basic analysis of the average speed of each carrier. With this, we are able to see carrier 'HA' has the highest average speed of any of the carriers. Even though some of the carriers do have higher 'highs', HA still on average is faster than the others.
+
+[London Olympics]
+```{r}
+olympics <- read_csv("https://uwmadison.box.com/shared/static/rzw8h2x6dp5693gdbpgxaf2koqijo12l.csv")
+```
+
+Part A/B
+```{r}
+counts <- olympics |>
+  count(Sport)
+
+olympics |>
+  left_join(counts) |>
+  filter(n > 5) |>
+  ggplot() +
+  geom_boxplot(
+    aes(Age, reorder(Sport, Age, sd))
+  )
+```
+
+Part C
+Average height(cm) among sports. See if there's a noticeable difference in the height among athletes that participate in different sports. Following the same idea as the age distribution, I created a visualization on based on height. 
+```{r}
+olympics |>
+  left_join(counts) |>
+  filter(n > 5) |>
+  ggplot() +
+  geom_boxplot(
+    aes(`Height, cm`, reorder(Sport, Age, sd))
+  )
+```
+
+There does not seem to be a very noticeable difference in height, except in basketball, which does make sense.
+
+[Pokemon]
+```{r}
+pokemon <- read_csv("https://uwmadison.box.com/shared/static/hf5cmx3ew3ch0v6t0c2x56838er1lt2c.csv")
+```
+
+Part A
+```{r}
+pokemon <- mutate(
+  pokemon,
+  'attack-to-defense' = Attack / Defense
+)
+pokemon |> select('attack-to-defense')
+```
+
+Part B
+```{r}
+pokemon |>
+  group_by(type_1) |>
+  summarise(type_1_med = median(`attack-to-defense`)) |>
+  arrange(type_1_med)
+```
