@@ -81,8 +81,27 @@ pokemon |> select('attack-to-defense')
 
 Part B
 ```{r}
-pokemon |>
+pokemon <- pokemon |>
   group_by(type_1) |>
-  summarise(type_1_med = median(`attack-to-defense`)) |>
-  arrange(type_1_med)
+  mutate(`attack-to-defense-median` = median(`attack-to-defense`, na.rm = TRUE)) |>
+  ungroup()
+pokemon
 ```
+
+Part C
+```{r}
+pokemon$type_1 <- reorder(pokemon$type_1, pokemon$`attack-to-defense-median`)
+
+ggplot(
+  pokemon,
+  aes(`attack-to-defense`)
+  ) +
+  geom_dotplot() +
+  facet_wrap("type_1", scales = "free_x")
+```
+
+Part D
+
+An example dynamic plot could compare the stat totals of pokemon based on different factors. For example, we could see the difference based on type or legendary status. This would answer how strong some types are or how strong legendaries are compared to regular pokemon. The user would be able to select what facet they want to view and the query would update how the stat totals are shown.
+
+[Gene Expression Faceting]
