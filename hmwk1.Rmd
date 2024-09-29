@@ -102,6 +102,6 @@ ggplot(
 
 Part D
 
-An example dynamic plot could compare the stat totals of pokemon based on different factors. For example, we could see the difference based on type or legendary status. This would answer how strong some types are or how strong legendaries are compared to regular pokemon. The user would be able to select what facet they want to view and the query would update how the stat totals are shown.
+An example dynamic plot could compare the stat totals of Pokemon based on different factors. For example, we could see the difference based on type or legendary status. This would answer how strong some types are or how strong legendaries are compared to regular Pokemon. The user would be able to select what facet they want to view and the query would update how the stat totals are shown.
 
 [Gene Expression Faceting]
