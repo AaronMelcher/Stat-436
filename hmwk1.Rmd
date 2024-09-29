@@ -22,6 +22,7 @@ Part A
 flights <- mutate(flights,
   speed = distance / air_time
 )
+flights
 ```
 
 
@@ -59,7 +60,7 @@ olympics |>
   filter(n > 5) |>
   ggplot() +
   geom_boxplot(
-    aes(`Height, cm`, reorder(Sport, Age, sd))
+    aes(`Height, cm`, reorder(Sport, `Height, cm`, sd))
   )
 ```
 
@@ -102,6 +103,46 @@ ggplot(
 
 Part D
 
-An example dynamic plot could compare the stat totals of Pokemon based on different factors. For example, we could see the difference based on type or legendary status. This would answer how strong some types are or how strong legendaries are compared to regular Pokemon. The user would be able to select what facet they want to view and the query would update how the stat totals are shown.
+An example dynamic plot could compare the stat totals of Pokemon based on different factors. For example, we could see the difference based on type or legendary status. This would answer how strong some types are or how strong legendary Pokemon are compared to regular Pokemon. The user would be able to select what facet they want to view and the query would update how the stat totals are shown.
 
 [Gene Expression Faceting]
+```{r}
+genes <- read_csv("https://uwmadison.box.com/shared/static/dwzchdtfca33r0f6i055k2d0939onnlv.csv")
+head(genes, 3)
+```
+
+
+[Visual Redesign]
+
+
+[California Wildfire Alternatives]
+```{r}
+fires <- read_csv("https://uwmadison.box.com/shared/static/k5vvekf1bhh9e16qb9s66owygc70t7dm.csv") |>
+  select(Name, Counties, year, day_of_year, AcresBurned, MajorIncident)
+head(fires, 3)
+```
+
+Part A
+- This visualization approach is well suited for for comparing the distribution of fires throughout the dates in each year shown. We can see somewhat easily when each fire happened during each year.
+
+- This visualization is not well suited for seeing which counties had the most fire damage. Based on how the graphs are structured, we cannot easily tell which counties had the most fires. The counties are arranged in a way that is hard to read the names as well as easily find the exact number of fires that occurred.
+
+Part B
+- This visualization is good for comparing the damage between the major fires from each year. We can easily see the range of acres burned by each type and are easily able to compare the damage done by each type over each year.
+
+- Again this visualization is not good for comparisons done between areas burned. Since we are not given any information on the area in which each fire occurred we don't know any of this information and thus cannot visually compare it.
+
+Part C
+- This visualization is good for comparing the damage the most damaging fires has done. We can easily see the name of the fire and also how much damage the fire did as well as the year it was in. The damage done by acre is clearly illustrated by the boxplot.
+
+Part D
+```{r}
+top_fires <- fires |>
+  arrange(desc(AcresBurned)) |>
+  top_n(18, AcresBurned)
+
+
+ggplot(top_fires, aes(AcresBurned, Name, fill=factor(year))) +
+  geom_bar(stat = 'identity') +
+  theme_minimal()
+```
