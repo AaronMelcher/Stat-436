@@ -91,14 +91,15 @@ pokemon
 
 Part C
 ```{r}
-pokemon$type_1 <- reorder(pokemon$type_1, pokemon$`attack-to-defense-median`)
+pokemon$type_1 <- reorder(pokemon$type_1, desc(pokemon$`attack-to-defense-median`))
 
 ggplot(
   pokemon,
   aes(`attack-to-defense`)
   ) +
   geom_dotplot() +
-  facet_wrap("type_1", scales = "free_x")
+  facet_wrap("type_1", scales = "free_x") +
+  theme_classic()
 ```
 
 Part D
@@ -137,12 +138,27 @@ Part C
 
 Part D
 ```{r}
+fires$Name <- reorder(fires$Name, fires$AcresBurned)
 top_fires <- fires |>
-  arrange(desc(AcresBurned)) |>
   top_n(18, AcresBurned)
 
 
 ggplot(top_fires, aes(AcresBurned, Name, fill=factor(year))) +
   geom_bar(stat = 'identity') +
-  theme_minimal()
+  labs(title = "Fires with the Most Acres Burned", x = "Acres Burned", y = "Fire", fill = "Year") +
+  theme_classic()
 ```
+
+[Homelessness]
+![alt text](homelessness_graph.png)
+Part A
+The data behind the graph would be the homeless bus relocations in the mainland United States over the period from 2011 to 2017. The rows would the year and the columns would the total number of homeless bus relocations to each city. 
+
+Part B
+Both columns would be numeric types as we are tracking quantitative data and can count the total number of bus relocations.
+
+Part C
+The data would be encoded by city since each city is given a 'circle' mark to indicate how many people relocated to the city via bus during the time period. The marks would be derived from the number of relocations and the circles follow a exponential scale of the total number of relocations.
+
+Part D
+Yes since we are given a map of the US to show visually what cities were the most effected as well as a bar graph that gives a general overview of the change in number of bus relocations over the time period.
