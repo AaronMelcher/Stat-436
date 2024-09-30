@@ -1,8 +1,11 @@
 ---
 title: "Homework 1"
-author: "Aaron Melcher
-output: html_document
+author: "Aaron Melcher"
 date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
 ---
 
 ```{r, echo = FALSE}
@@ -11,13 +14,13 @@ library(tidyverse)
 library(ggplot2)
 ```
 
-[NYC Flights]
+#[NYC Flights]
 ```{r}
 library(nycflights13)
 flights |> select(carrier, air_time, distance)
 ```
 
-Part A
+##Part A
 ```{r}
 flights <- mutate(flights,
   speed = distance / air_time
@@ -26,19 +29,20 @@ flights
 ```
 
 
-Part B
+##Part B
 ```{r}
 ggplot(flights, aes(carrier, speed)) +
   geom_boxplot()
 ``` 
+
 The boxplot above provides a very basic analysis of the average speed of each carrier. With this, we are able to see carrier 'HA' has the highest average speed of any of the carriers. Even though some of the carriers do have higher 'highs', HA still on average is faster than the others.
 
-[London Olympics]
+#[London Olympics]
 ```{r}
 olympics <- read_csv("https://uwmadison.box.com/shared/static/rzw8h2x6dp5693gdbpgxaf2koqijo12l.csv")
 ```
 
-Part A/B
+##Part A/B
 ```{r}
 counts <- olympics |>
   count(Sport)
@@ -52,7 +56,8 @@ olympics |>
   )
 ```
 
-Part C
+##Part C
+
 Average height(cm) among sports. See if there's a noticeable difference in the height among athletes that participate in different sports. Following the same idea as the age distribution, I created a visualization on based on height. 
 ```{r}
 olympics |>
@@ -66,12 +71,12 @@ olympics |>
 
 There does not seem to be a very noticeable difference in height, except in basketball, which does make sense.
 
-[Pokemon]
+#[Pokemon]
 ```{r}
 pokemon <- read_csv("https://uwmadison.box.com/shared/static/hf5cmx3ew3ch0v6t0c2x56838er1lt2c.csv")
 ```
 
-Part A
+##Part A
 ```{r}
 pokemon <- mutate(
   pokemon,
@@ -80,7 +85,7 @@ pokemon <- mutate(
 pokemon |> select('attack-to-defense')
 ```
 
-Part B
+##Part B
 ```{r}
 pokemon <- pokemon |>
   group_by(type_1) |>
@@ -89,7 +94,7 @@ pokemon <- pokemon |>
 pokemon
 ```
 
-Part C
+##Part C
 ```{r}
 pokemon$type_1 <- reorder(pokemon$type_1, desc(pokemon$`attack-to-defense-median`))
 
@@ -102,41 +107,137 @@ ggplot(
   theme_classic()
 ```
 
-Part D
+##Part D
 
 An example dynamic plot could compare the stat totals of Pokemon based on different factors. For example, we could see the difference based on type or legendary status. This would answer how strong some types are or how strong legendary Pokemon are compared to regular Pokemon. The user would be able to select what facet they want to view and the query would update how the stat totals are shown.
 
-[Gene Expression Faceting]
+#[Gene Expression Faceting]
 ```{r}
 genes <- read_csv("https://uwmadison.box.com/shared/static/dwzchdtfca33r0f6i055k2d0939onnlv.csv")
 head(genes, 3)
 ```
 
+##Part A
+```{r}
+genes <- mutate(genes,
+                'log(1 + value)' = log(1 + value)
+                )
 
-[Visual Redesign]
+ggplot(genes, aes(
+  x = time,
+  y = `log(1 + value)`,
+  alpha = 0.5
+)) +
+  geom_point() +
+  facet_wrap(~ gene) +
+  theme_bw()
+```
+
+##Part B
+One advantage of small multiples is being able to compare multiple graphs one the same scale. This allows for comparisons between different facets such as shown in the graph above.
+
+One disadvantage of small multiples is trying to display large amounts of data since too many graphs can be overwhelming and unweildy with lots of different information.
+
+##Part C
+```{r}
+gene_groups <- genes |>
+group_by(gene, rounded_time = round(time, 2)) |>
+summarise(mean_value = mean(value))
+head(gene_groups, 3)
+```
+
+##Part D
+```{r}
+fitted_values <- read_csv("https://go.wisc.edu/x678hu")
+head(fitted_values, 3)
+```
+
+```{r}
+ggplot(genes, aes(
+  x = time,
+  y = `log(1 + value)`,
+  alpha = 0.5
+)) +
+  geom_point() +
+  geom_line(
+    data = fitted_values,
+    aes(
+      x = time,
+      y = log(mu),
+      color = 'red'
+    ),
+    size = 1.5
+  ) +
+  facet_wrap(~ gene) +
+  theme_bw()
+```
 
 
-[California Wildfire Alternatives]
+
+#[Visual Redesign]
+
+##Part A
+Here is the code for a very basic visualization that was done in a past Stats class:
+```{r}
+n_df = read.csv("nile.csv")
+
+ggplot(n_df) +
+  geom_point(aes(
+    x = Year,
+    y = Flow
+  )) +
+  xlab("Year") +
+  ylab("Flow (10's of Millions cubic meters)")
+```
+
+##Part B
+The main takeaways from the above graph are the overall decline in water flow over the time period. This is somewhat consistent from the visualization as there really isn't an intended message and the interpretation of the data is left up to the viewer. 
+
+##Part C
+The visualization is legible but hard to draw any ideas from as there is any additional visualization provided to help highlight more information. The dataset itself isn't super in-depth but additional visual elements can help with providing more in-depth analysis.
+
+##Part D
+Here is a new visualization that uses the original design but adds a basic overlay to better highlight the information I want the viewer to know. With the limited data, there isn't too much more that can be visualized.
+
+```{r}
+ggplot(n_df, 
+       aes(
+         x = Year, 
+         y = Flow)
+       ) +
+  geom_point() +
+  geom_smooth(
+    method = "lm", 
+    se = FALSE, 
+    color = "red", 
+    size = 1
+    ) +
+  xlab("Year") +
+  ylab("Flow (10's of Millions cubic meters)")
+```
+
+
+#[California Wildfire Alternatives]
 ```{r}
 fires <- read_csv("https://uwmadison.box.com/shared/static/k5vvekf1bhh9e16qb9s66owygc70t7dm.csv") |>
   select(Name, Counties, year, day_of_year, AcresBurned, MajorIncident)
 head(fires, 3)
 ```
 
-Part A
+##Part A
 - This visualization approach is well suited for for comparing the distribution of fires throughout the dates in each year shown. We can see somewhat easily when each fire happened during each year.
 
 - This visualization is not well suited for seeing which counties had the most fire damage. Based on how the graphs are structured, we cannot easily tell which counties had the most fires. The counties are arranged in a way that is hard to read the names as well as easily find the exact number of fires that occurred.
 
-Part B
+##Part B
 - This visualization is good for comparing the damage between the major fires from each year. We can easily see the range of acres burned by each type and are easily able to compare the damage done by each type over each year.
 
 - Again this visualization is not good for comparisons done between areas burned. Since we are not given any information on the area in which each fire occurred we don't know any of this information and thus cannot visually compare it.
 
-Part C
+##Part C
 - This visualization is good for comparing the damage the most damaging fires has done. We can easily see the name of the fire and also how much damage the fire did as well as the year it was in. The damage done by acre is clearly illustrated by the boxplot.
 
-Part D
+##Part D
 ```{r}
 fires$Name <- reorder(fires$Name, fires$AcresBurned)
 top_fires <- fires |>
@@ -149,16 +250,16 @@ ggplot(top_fires, aes(AcresBurned, Name, fill=factor(year))) +
   theme_classic()
 ```
 
-[Homelessness]
+#[Homelessness]
 ![alt text](homelessness_graph.png)
-Part A
+##Part A
 The data behind the graph would be the homeless bus relocations in the mainland United States over the period from 2011 to 2017. The rows would the year and the columns would the total number of homeless bus relocations to each city. 
 
-Part B
+##Part B
 Both columns would be numeric types as we are tracking quantitative data and can count the total number of bus relocations.
 
-Part C
+##Part C
 The data would be encoded by city since each city is given a 'circle' mark to indicate how many people relocated to the city via bus during the time period. The marks would be derived from the number of relocations and the circles follow a exponential scale of the total number of relocations.
 
-Part D
+##Part D
 Yes since we are given a map of the US to show visually what cities were the most effected as well as a bar graph that gives a general overview of the change in number of bus relocations over the time period.
