@@ -1,0 +1,42 @@
+---
+title: "Homework 2 - Interactive Shiny App"
+author: "Aaron Melcher"
+date: "`r Sys.Date()`"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
+library(tidyverse)
+library(ggplot2)
+library(shiny)
+```
+
+```{r}
+ballon_dor <- read_csv("BallonDOr.csv")
+
+nationalities <- pull(ballon_dor, Nationality) |>
+  unique() |>
+  na.omit()
+
+years <- pull(ballon_dor, Year) |>
+  unique() |>
+  na.omit()
+
+scatter_plot <- function(df) {
+  p <- ggplot(mapping = aes(Player, Rank)) +
+    geom_point(data = df |> filter(selected), size = 2, alpha = 1)
+}
+
+ui <- fluidPage(
+  titlePanel("Ballon D'Or Rankings"),
+  sliderInput("Year", "Year", min = min(ballon_dor$Year), max = max(ballon_dor$Year), c(1950, 2020), sep="")
+)
+```
+
+```{r}
+
+```
