@@ -1,0 +1,35 @@
+---
+title: "In-Class Exercise 6-1"
+author: "Aaron Melcher"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(tsibble)
+library(feasts)
+library(tsibbledata)
+
+spotify = read_csv("https://uwmadison.box.com/shared/static/hvplyr3jy6vbt7s80lqgfx81ai4hdl0q.csv")
+```
+
+Part A
+```{r}
+spotify_tsibble = as_tibble(spotify, index="date", key="region")
+spotify_tsibble
+```
+
+Part B
+```{r}
+global_tsibble <- spotify_tsibble |>
+  filter(region=="global")
+
+#gg_season(as_tibble(global_tsibble), period = "month", pal = streams)
+```
+
+Struggled with determining what error was occurring when trying to create the gg_season plot. unsure what the root cause is - possible something to do with the type of data object im trying to use

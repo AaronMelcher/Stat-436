@@ -2,10 +2,7 @@
 title: "Homework 2 - Interactive Shiny App"
 author: "Aaron Melcher"
 date: "`r Sys.Date()`"
-output:
-  word_document: default
-  html_document: default
-  pdf_document: default
+runtime: shiny
 ---
 
 ```{r, echo = FALSE}
