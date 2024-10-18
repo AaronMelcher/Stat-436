@@ -42,7 +42,7 @@ wins_by_country <- winners |>
   count(Nationality, name="Wins") |>
   arrange(desc(Wins))
   
-ggplot(wins_by_country, aes(reorder(Nationality, Wins), Wins)) +
+ggplot(wins_by_country, aes(reorder(Nationality, Wins), Wins, fill=Wins)) +
   geom_bar(stat = "identity") +
   coord_flip() +
   labs(
@@ -50,5 +50,5 @@ ggplot(wins_by_country, aes(reorder(Nationality, Wins), Wins)) +
     x = "Country",
     y = "Number of Wins"
   ) +
-  theme_minimal()
+  theme_classic()
 ```
