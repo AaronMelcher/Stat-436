@@ -11,6 +11,7 @@ knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
 library(tidyverse)
 library(ggplot2)
 library(shiny)
+theme_set(theme_classic())
 
 # Data setup - gathering sets and 
 ballon_dor <- read_csv("BallonDOr.csv")
@@ -25,7 +26,7 @@ years <- pull(ballon_dor, Year) |>
 
 ranks <- c(1, 2, 3, 4, 5)
 
-winner_graph <- function() {
+winners_data <- function() {
   ballon_dor |>
   group_by(Year) |>
   summarise(Winner = Player[Rank == 1],
@@ -43,12 +44,40 @@ winner_graph <- function() {
 ```{r, eval=FALSE}
 ### shiny app definition
 ui <- fluidPage(
-  titlePanel("Ballon D'Or Rankings Analysis"),
-  checkboxGroupInput("ranks", "Ranks", ranks, ranks)
+  titlePanel("Ballon d'Or Rankings Analysis"),
+  fluidRow(
+   column(6,
+          h4("Select Ballon d'Or Rank (1-5):"),
+          checkboxGroupInput("ranks", "Ranks", ranks, ranks, inline = TRUE)
+   ),
+   column(6,
+          h4("Filter years (1956-2023):"),
+          sliderInput("year", "Year", min = min(years), max = max(years), c(1956, 2023), sep = "")
+   )
+  ),
+  fluidRow(
+    column(6,
+          plotOutput("rankDist")
+    ),
+    column(6,
+          plotOutput("countryWins")
+    )
+  ),
+  fluidRow(
+    column(12,
+           h4("Ballon D'Or Rankings Table"),
+           dataTableOutput("playerTable")
+    )
+  )
 )
 
 server <- function(input, output) {
-  
+  # Density plot for point distribution by rank
+  output$rankDist <- renderPlot({
+    ggplot(, aes(x = Points)) +
+      geom_density(fill = "lightblue") +
+      labs(x = "Points", y = "Density", title = "Density Plot of Points Distribution by Rank")
+  })
 }
 
 shinyApp(ui, server)
