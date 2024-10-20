@@ -2,17 +2,16 @@
 title: "Homework 2 - Interactive Shiny App"
 author: "Aaron Melcher"
 date: "`r Sys.Date()`"
-#runtime: shiny
 ---
-
 ```{r, echo = FALSE}
 knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
-library(tidyverse)
-library(ggplot2)
-library(shiny)
 ```
 
 ```{r}
+library(tidyverse)
+library(ggplot2)
+library(shiny)
+
 # Data setup - gathering sets and 
 ballon_dor <- read_csv("BallonDOr.csv")
 
@@ -24,7 +23,10 @@ years <- pull(ballon_dor, Year) |>
   unique() |>
   na.omit()
 
-winners <- ballon_dor |>
+ranks <- c(1, 2, 3, 4, 5)
+
+winner_graph <- function() {
+  ballon_dor |>
   group_by(Year) |>
   summarise(Winner = Player[Rank == 1],
             Total_Points = Points[Rank == 1],
@@ -35,20 +37,19 @@ winners <- ballon_dor |>
             Percent = Percent[Rank == 1]
             ) |>
   arrange(Year)
+}
 ```
 
-```{r}
-wins_by_country <- winners |>
-  count(Nationality, name="Wins") |>
-  arrange(desc(Wins))
+```{r, eval=FALSE}
+### shiny app definition
+ui <- fluidPage(
+  titlePanel("Ballon D'Or Rankings Analysis"),
+  checkboxGroupInput("ranks", "Ranks", ranks, ranks)
+)
+
+server <- function(input, output) {
   
-ggplot(wins_by_country, aes(reorder(Nationality, Wins), Wins, fill=Wins)) +
-  geom_bar(stat = "identity") +
-  coord_flip() +
-  labs(
-    title = "Number of Ballon D'Or Wins by Country ",
-    x = "Country",
-    y = "Number of Wins"
-  ) +
-  theme_classic()
+}
+
+shinyApp(ui, server)
 ```
