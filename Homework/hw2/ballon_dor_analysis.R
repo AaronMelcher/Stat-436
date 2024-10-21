@@ -1,10 +1,3 @@
----
-title: "Homework 2 - Interactive Shiny App"
-author: "Aaron Melcher"
-date: "`r Sys.Date()`"
-runtime: shiny
----
-```{r, echo = FALSE}
 library(tidyverse)
 library(ggplot2)
 library(DT)
@@ -24,16 +17,16 @@ years <- pull(ballon_dor, Year) |>
 ranks <- c(1, 2, 3, 4, 5)
 
 winners <- ballon_dor |>
-                group_by(Year) |>
-                summarise(Winner = Player[Rank == 1],
-                          Total_Points = Points[Rank == 1],
-                          Nationality = Nationality[Rank == 1],
-                          Club = Club[Rank == 1],
-                          Rank_Points = RankPts[Rank == 1],
-                          Share = Share[Rank == 1],
-                          Percent = Percent[Rank == 1]
-                          ) |>
-                arrange(Year)
+  group_by(Year) |>
+  summarise(Winner = Player[Rank == 1],
+            Total_Points = Points[Rank == 1],
+            Nationality = Nationality[Rank == 1],
+            Club = Club[Rank == 1],
+            Rank_Points = RankPts[Rank == 1],
+            Share = Share[Rank == 1],
+            Percent = Percent[Rank == 1]
+  ) |>
+  arrange(Year)
 
 ### shiny app definition
 ui <- fluidPage(
@@ -43,21 +36,21 @@ ui <- fluidPage(
   p("The inputs below control the graph below them to show different data from the overall votes and winners respectively."),
   p("The data table at the bottom of the page will show the filtered results with all associated data."),
   fluidRow(
-   column(6,
-          h4("Select Ballon d'Or Rank (1-5):"),
-          checkboxGroupInput("ranks", "Ranks", ranks, ranks, inline = TRUE)
-   ),
-   column(6,
-          h4("Filter years (1956-2023):"),
-          sliderInput("year", "Year", min = min(years), max = max(years), c(1956, 2023), sep = "")
-   )
+    column(6,
+           h4("Select Ballon d'Or Rank (1-5):"),
+           checkboxGroupInput("ranks", "Ranks", ranks, ranks, inline = TRUE)
+    ),
+    column(6,
+           h4("Filter years (1956-2023):"),
+           sliderInput("year", "Year", min = min(years), max = max(years), c(1956, 2023), sep = "")
+    )
   ),
   fluidRow(
     column(6,
-          plotOutput("rankDist")
+           plotOutput("rankDist")
     ),
     column(6,
-          plotOutput("countryWins")
+           plotOutput("countryWins")
     )
   ),
   fluidRow(
@@ -70,11 +63,11 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   rank_data <- reactive(
-      ballon_dor |>
+    ballon_dor |>
       filter(Rank %in% input$ranks,
              Year >= input$year[1],
              Year <= input$year[2]
-        )
+      )
   )
   
   country_years <- reactive(
@@ -109,4 +102,4 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
-```
+
