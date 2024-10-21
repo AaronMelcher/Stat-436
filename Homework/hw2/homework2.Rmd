@@ -2,17 +2,15 @@
 title: "Homework 2 - Interactive Shiny App"
 author: "Aaron Melcher"
 date: "`r Sys.Date()`"
+runtime: shiny
 ---
 ```{r, echo = FALSE}
-knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
-```
-
-```{r}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE, show_col_types = FALSE)
 library(tidyverse)
 library(ggplot2)
-library(shiny)
 library(DT)
 library(ggridges)
+library(shiny)
 theme_set(theme_classic())
 
 # Data setup - gathering sets and 
@@ -37,9 +35,7 @@ winners <- ballon_dor |>
                           Percent = Percent[Rank == 1]
                           ) |>
                 arrange(Year)
-```
 
-```{r, eval=FALSE}
 ### shiny app definition
 ui <- fluidPage(
   titlePanel("Ballon d'Or Rankings Analysis"),

@@ -1,0 +1,13 @@
+name: Ballon_dOr_Analysis
+title: Ballon_dOr_Analysis
+username: aaron-melcher
+account: aaron-melcher
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13077942
+bundleId: 9249728
+url: https://aaron-melcher.shinyapps.io/Ballon_dOr_Analysis/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: hw2.docx
