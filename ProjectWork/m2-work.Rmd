@@ -1,0 +1,94 @@
+---
+title: "Homework 2 - Interactive Shiny App"
+author: "Aaron Melcher"
+date: "`r Sys.Date()`"
+---
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
+
+library(tidyverse)
+library(ggplot2)
+```
+
+```{r}
+employee_data <- read.csv("Extended_Employee_Performance_and_Productivity_Data.csv") |>
+  # Work Hours Per Week Group
+  mutate(Work_Hours_Per_Week_Group = case_when(
+    Work_Hours_Per_Week <= 20 ~ "<20",
+    Work_Hours_Per_Week <= 30 ~ "20-30",
+    Work_Hours_Per_Week <= 40 ~ "30-40",
+    Work_Hours_Per_Week <= 50 ~ "40-50",
+    Work_Hours_Per_Week <= 60 ~ "50-60",
+    TRUE ~ "60+"
+  )) |>
+  
+  # Projects Handled Group
+  mutate(Projects_Handled_Group = case_when(
+    Projects_Handled <= 5 ~ "<5",
+    Projects_Handled <= 10 ~ "5-10",
+    Projects_Handled <= 20 ~ "10-20",
+    Projects_Handled <= 30 ~ "20-30",
+    Projects_Handled <= 40 ~ "30-40",
+    TRUE ~ "40+"
+  )) |>
+  
+  # Overtime Hours Group
+  mutate(Overtime_Hours_Group = case_when(
+    Overtime_Hours <= 0 ~ "0-10",
+    Overtime_Hours <= 20 ~ "10-20",
+    Overtime_Hours <= 30 ~ "20-30",
+    Overtime_Hours <= 40 ~ "30-40",
+    TRUE ~ "40+"
+  ))
+
+projects_perf <- employee_data |>
+  group_by(Projects_Handled) |>
+  summarise(Avg_Performance = mean(Performance_Score))
+
+hours_perf <- employee_data |>
+  group_by(Work_Hours_Per_Week) |>
+  summarise(Avg_Performance = mean(Performance_Score))
+
+dept_hours_perf <- employee_data |>
+  group_by(Department, Work_Hours_Per_Week) |>
+  summarise(Avg_Performance = mean(Performance_Score))
+
+dept_proj_perf <- employee_data |>
+  group_by(Department, Projects_Handled) |>
+  summarise(Avg_Performance = mean(Performance_Score))
+```
+
+```{r}
+ggplot(hours_perf) +
+  geom_point(aes(x = Work_Hours_Per_Week, y = Avg_Performance)) +
+  geom_smooth(aes(x = Work_Hours_Per_Week, y = Avg_Performance), method="lm")
+
+ggplot(projects_perf) +
+  geom_point(aes(x = Projects_Handled, y = Avg_Performance)) +
+  geom_smooth(aes(x = Projects_Handled, y = Avg_Performance), method="lm") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(dept_hours_perf, aes(Work_Hours_Per_Week, Avg_Performance)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(Department ~ .) +
+  theme_minimal() +
+  labs(
+    x = "Work Hours Per Week",
+    y = "Average Performance Score",
+    title = "Average Performance vs Work Hours Per Week by Department"
+  )
+
+ggplot(dept_proj_perf, aes(Projects_Handled, Avg_Performance)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(Department ~ .) +
+  theme_minimal() +
+  labs(
+    x = "Number of Projects Handled",
+    y = "Average Performance Score",
+    title = "Average Performance vs Projects Handled by Department"
+  )
+```
