@@ -1,0 +1,64 @@
+---
+title: "Homework 2 - Interactive Shiny App"
+author: "Aaron Melcher"
+date: "`r Sys.Date()`"
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
+library(tidyverse)
+library(ggplot2)
+```
+
+[Bike Demand]
+```{r}
+bikes = read.csv("https://uwmadison.box.com/shared/static/f16jmkkskylfl1hnd5rpslzduja929g2.csv")
+```
+
+Part A
+```{r}
+bike_demand = bikes |>
+  group_by(weekday, hr) |>
+  summarise(Total_Count = sum(count)) |>
+  ungroup()
+  
+ggplot(bike_demand, aes(x = hr, y = Total_Count)) +
+    geom_line(color = "blue") +
+    facet_wrap(weekday ~ .) +
+    labs(
+        title = "Bike Demand by Hour over the Week",
+        x = "Hour",
+        y = "Demand (count)"
+      ) +
+    theme_minimal() 
+```
+
+Part B
+```{r}
+bike_quantiles <- bikes |>
+  group_by(yr, weekday, hr) |>
+  summarise(
+    Q25 = quantile(count, 0.25),
+    Q75 = quantile(count, 0.75)
+  ) |>
+  ungroup()
+```
+
+Part C
+```{r}
+ggplot() +
+    geom_line(data = bike_demand, mapping = aes(x = hr, y = Total_Count)) +
+    geom_ribbon(data = bike_quantiles, mapping = aes(x = hr, ymin = Q25, ymax = Q75, fill = as.factor(yr))) +
+    facet_wrap(~ weekday) +
+    labs(
+        title = "Bike Demand by Hour per Weekday",
+        x = "Hour",
+        y = "Demand (count)",
+        color = "Year",
+        fill = "Year"
+      ) +
+    theme_minimal()
+```
+
+Part D
+The above graph shows the 
