@@ -1,5 +1,5 @@
 ---
-title: "Homework 2 - Interactive Shiny App"
+title: "Homework 3"
 author: "Aaron Melcher"
 date: "`r Sys.Date()`"
 ---
@@ -61,4 +61,38 @@ ggplot() +
 ```
 
 Part D
-The above graph shows the 
+The above graph shows the ...
+
+[American Time Use Survey]
+```{r}
+activity <- read_csv("https://github.com/krisrs1128/stat992_f23/raw/main/exercises/ps2/activity.csv")
+```
+
+Part A
+1. What is the most popular time to work-out? (Highest proportion of people working out)
+2. When do most people participate in sports?
+3. 
+
+
+Part B
+```{r}
+ggplot(activity, aes(time, prop_smooth)) +
+  geom_line() +
+  facet_wrap(activity ~ .) +
+  theme_minimal()
+```
+
+
+Part C
+```{r}
+
+```
+
+
+[Political Book Recommendations]
+
+[CalFresh Enrollment I]
+
+[Geospatial Datasets (a-e)]
+
+[Social Data Vis]
