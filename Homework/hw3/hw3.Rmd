@@ -17,20 +17,14 @@ bikes = read.csv("https://uwmadison.box.com/shared/static/f16jmkkskylfl1hnd5rpsl
 
 Part A
 ```{r}
-bike_demand = bikes |>
-  group_by(weekday, hr) |>
-  summarise(Total_Count = sum(count)) |>
-  ungroup()
+bikes$weekday <- factor(bikes$weekday, levels = 0:6, labels = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+bikes$hr <- as.factor(bikes$hr)
   
-ggplot(bike_demand, aes(x = hr, y = Total_Count)) +
-    geom_line(color = "blue") +
-    facet_wrap(weekday ~ .) +
-    labs(
-        title = "Bike Demand by Hour over the Week",
-        x = "Hour",
-        y = "Demand (count)"
-      ) +
-    theme_minimal() 
+ggplot(bikes, aes(x = hr, y = count, group = weekday)) +
+  geom_line(stat = "summary", fun = "mean") +
+  facet_wrap(~weekday, ncol = 2) +
+  labs(title = "Bike Demand by Hour Across Weekdays", x = "Hour", y = "Bike Demand") +
+  theme_minimal()
 ```
 
 Part B
@@ -38,30 +32,35 @@ Part B
 bike_quantiles <- bikes |>
   group_by(yr, weekday, hr) |>
   summarise(
-    Q25 = quantile(count, 0.25),
-    Q75 = quantile(count, 0.75)
-  ) |>
-  ungroup()
+    q25 = quantile(count, 0.25),
+    q75 = quantile(count, 0.75)
+  )
+
+head(bike_quantiles, 10)
 ```
 
 Part C
 ```{r}
 ggplot() +
-    geom_line(data = bike_demand, mapping = aes(x = hr, y = Total_Count)) +
-    geom_ribbon(data = bike_quantiles, mapping = aes(x = hr, ymin = Q25, ymax = Q75, fill = as.factor(yr))) +
-    facet_wrap(~ weekday) +
-    labs(
-        title = "Bike Demand by Hour per Weekday",
-        x = "Hour",
-        y = "Demand (count)",
-        color = "Year",
-        fill = "Year"
-      ) +
-    theme_minimal()
+  geom_line(data = bikes, stat = "summary", fun = "mean", aes(x = as.numeric(hr), y = count, group = weekday, color = factor(yr))) +
+  geom_ribbon(data = bike_quantiles, aes(x = as.numeric(hr), ymin = q25, ymax = q75, fill = factor(yr)), alpha = 0.2) +
+  facet_wrap(~weekday, ncol = 2) +
+  labs(title = "Bike Demand by Hour with Quantiles", 
+       x = "Hour", 
+       y = "Bike Demand",
+       color = "Year", 
+       fill = "Year"
+       ) +
+  theme_minimal()
 ```
 
 Part D
-The above graph shows the ...
+
+The above visualization shows the mean demand for bikes over a 2 year period. The graph goes in detail on the hour of the day as well as the weekday. This provides insights into the peak hours for demand and which days of the week see the highest demand. Additionally, the years are compared using the ribbons to show that demand increased from Year 0 to Year 1.
+
+Some insights:
+- Peak hours during the weekdays are most likely a result fo commuting to and from work as most people aren't able to get into a bike shop during working hours.
+- Year 1 has slightly more demand than Year 0, indicating a shift in some trend towards biking. This could be an increased popularity, improved weather conditions, or other factors. 
 
 [American Time Use Survey]
 ```{r}
@@ -69,30 +68,181 @@ activity <- read_csv("https://github.com/krisrs1128/stat992_f23/raw/main/exercis
 ```
 
 Part A
-1. What is the most popular time to work-out? (Highest proportion of people working out)
-2. When do most people participate in sports?
-3. 
+1. What activities have the highest overlapping peak times? Which ones have the most contrasting?
+2. Is there a trend between similar activities on their peak times?
+3. How does the proportion of people sleeping change throughout the day?
 
 
 Part B
-```{r}
-ggplot(activity, aes(time, prop_smooth)) +
-  geom_line() +
-  facet_wrap(activity ~ .) +
-  theme_minimal()
+```{r, fig.width=10, fig.height=8 }
+activity |>
+  ggplot(aes(x = time, y = prop_smooth, color = activity)) +
+  geom_line(alpha = 0.7) +
+  labs(
+    title = "Smoothed Proportion Changes over Time",
+    x = "Time",
+    y = "Smoothed Proportion",
+    color = "Activity"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "right") +
+  guides(color = guide_legend(ncol = 1))
 ```
 
 
 Part C
-```{r}
-
+```{r, fig.height=8}
+library(ggridges)
+activity |>
+  ggplot(aes(x = time, y = activity, height = prop_smooth, group = activity, fill = activity)) +
+  geom_ridgeline(alpha = 0.7, scale = 3) +
+  scale_fill_viridis_d(option = "plasma", guide = "none") +
+  labs(
+    title = "Ridgeline Plot of Activity Engagement Over Time",
+    x = "Time of Day",
+    y = "Activity"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1))
 ```
+
+The ridge plot provides a much more intuitive visualization of the activity data. The ridges allow for easier comparison between the different activities, especially the similar/different peaks. The line plot is much more cluttered and it can be difficult to find a specific activities while in the ridge plot it is much easier to pick out the specific ones. If there were a smaller amount of activities being compared, the line plot from (b) would be perfect as it would allow for more in-depth analysis of the specific activites. But, in this case, the ridge plot above provides a better holistic view of the entire dataset.
 
 
 [Political Book Recommendations]
+Part A
+```{r}
+library(tidygraph)
+library(readr)
+
+edges <- read_csv("https://go.wisc.edu/but14m", col_types = "cci")
+nodes <- read_csv("https://go.wisc.edu/563cy6", col_types = "ccc")
+
+graph <- tbl_graph(nodes = nodes, edges = edges, directed = FALSE)
+```
+
+Part B
+```{r}
+library(ggraph)
+ggraph(graph, layout = "fr") + 
+  geom_edge_link(aes(edge_alpha = weight), show.legend = FALSE) + 
+  geom_node_point(aes(color = political_ideology), size = 5) + 
+  geom_node_text(aes(label = label), repel = TRUE) +
+  theme_minimal() +
+  labs(title = "Amazon US Politics Books Network", 
+       color = "Political Ideology")
+```
+
+Part C
+```{r, fig.width=16, fig.height=16}
+library(igraph)
+adj_matrix <- as_adjacency_matrix(as.igraph(graph), attr = "weight", sparse = FALSE)
+
+ggplot(data = as.data.frame(as.table(adj_matrix)), aes(Var1, Var2, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient(low = "white", high = "blue") +
+  theme_minimal() +
+  labs(title = "Adjacency Matrix of the Book Network", 
+       x = "Books", 
+       y = "Books", 
+       fill = "Edge Weight"
+       ) +
+  theme(axis.text = element_text(size = 9), axis.text.x = element_text(angle = 45, hjust = 1))
+```
 
 [CalFresh Enrollment I]
+```{r}
+library(tsibble)
+calfresh <- read_csv("https://uwmadison.box.com/shared/static/rduej9hsc4w3mdethxnx9ccv752f22yr.csv") |>
+  filter(date != "2019 Feb") |>
+  mutate(date = yearmonth(date)) |>
+  as_tsibble(key = county, index = date)
+```
+
+Part A
+```{r}
+library(feasts)
+cal_features <- calfresh |>
+  features(calfresh, feat = feature_set())
+
+cal_features
+```
+
+Part B
+```{r}
+highest_seasonal <- cal_features |>
+  slice_max(seasonal_strength_year, n = 1)
+
+lowest_seasonal <- cal_features |>
+  slice_min(seasonal_strength_year, n = 1)
+
+counties_to_plot <- calfresh |>
+  filter(county %in% c(highest_seasonal$county, lowest_seasonal$county))
+
+counties_to_plot |>
+ggplot(aes(x = date, y = calfresh, color = county)) +
+  geom_line() +
+    labs(
+      title = "CalFresh Enrollment Over Time",
+      x = "Date",
+      y = "Enrollment",
+      color = "County"
+    ) +
+    theme_minimal()
+```
+
+Part C
+```{r}
+library(sf)
+sf_use_s2(FALSE)
+counties <- read_sf("https://uwmadison.box.com/shared/static/gropucqxgqm82yhq13do1ws9k16dnxq7.geojs")
+
+counties <- counties |>
+  left_join(cal_features, by = "county")
+
+ggplot(counties) +
+  geom_sf(aes(fill = seasonal_strength_year)) +
+  scale_fill_viridis_c(name = "Seasonal Strength (Year)") +
+  labs(
+    title = "CalFresh Enrollment Seasonal Strength by County"
+  ) +
+  theme_minimal()
+```
+
+Part D
+TODO
 
 [Geospatial Datasets (a-e)]
 
+Part A - NYC Building Footprints
+
+The NYC data is in vector format. The geometry is stored in polygons and multi-polygons. The polygons represent individual close shapes, like the boundaries of buildings. The multi-polygons group together multiple items to represent more complex shapes.
+
+Part B - Africa Population 2020
+
+This dataset is in raster data format as specified by the .tif file extension.
+
+Part C - Himalayan Glacial Lakes
+
+This dataset is in vector format and specifically uses the TopoJSON format, an extension of the GeoJSON format. It defines it geometries in arcs, which can contain linestrings, polygons, and multi-polygons. This allows for an efficient representation of topological relationships. Since we see data stored in arcs, we can say this dataset to be in vector format.
+
+Part D - Wisconsin EV Charging
+
+This dataset is in vector format and uses the GeoJSON format. Specifically, this dataset uses point geometries to represent specific locations. This is obvious as the data includes latitude and longitude points specifying specific points where stations are located.
+
+Part E - Zion Elevation
+
+This dataset is stored in raster data format as specified by the .tif extension.
+
 [Social Data Vis]
+
+Part A
+
+I selected the Rolling Stone Album Rankings prompt found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-05-07/readme.md). Some initial thoughts I had were:
+- What genres increased in popularity from 2003-2020? Where there any major trends that started appearing in 2012?
+- What was the impact of Spotify and other streaming platforms on album rankings? What albums lost/gained rankings?
+- Do Billboard rankings have an impact on ranking?
+- Can some of these metrics be used in a heatmap of sorts to create trends between albums?
+
+Part B
+I struggled to find publicly posted submissions for this project but the data came from [Pudding article](https://pudding.cool/2024/03/greatest-music/) that provides a in-depth look at all parts of the data (includes voters and the ballots). I thought this was very intriguing and provides visualizations that focus on specific points in the data. It shows the changes from each year but doesn't go into too much depth on the overall trends of the data. There's a large focus on X/Y based on certain metrics like decade or Billboard number 1. Even so, this visualization is good for highlighting the specific albums that changed and showing recognizable pictures to show the main albums that changed.
