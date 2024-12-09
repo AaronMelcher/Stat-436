@@ -1,123 +1,52 @@
-```{r}
-# Load required libraries
+---
+title: "Homework 4"
+author: "Aaron Melcher"
+date: "`r Sys.Date()`"
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(warnings = FALSE, message = FALSE)
+library(tidyverse)
 library(ggplot2)
+library(umap)
+```
 
-# Load data (assuming it is downloaded and loaded into R)
-data <- read.csv("vgsales.csv")
-
-# Select numeric columns for PCA
-sales_data <- data[, c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales")]
+```{r}
+# Data preparation
+vgsales <- read.csv("vgsales.csv") |>
+  mutate(Genre = ifelse(Genre == "Platform", "Platformer", Genre))
+sales_data <- vgsales[, c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales")]
 sales_data <- sales_data[complete.cases(sales_data), ]
+```
 
-# Perform PCA
+```{r}
+# PCA graph
 pca <- prcomp(sales_data, scale. = TRUE)
+pca_data <- data.frame(PCA1 = pca$x[, 1], PCA2 = pca$x[, 2], Genre = vgsales$Genre[1:nrow(sales_data)])
 
-# Prepare PCA results
-pca_data <- data.frame(PCA1 = pca$x[, 1], PCA2 = pca$x[, 2], Genre = data$Genre[1:nrow(sales_data)])
-
-# Create visualization
 ggplot(pca_data, aes(x = PCA1, y = PCA2, color = Genre)) +
   geom_point(alpha = 0.7) +
   labs(title = "PCA of Video Game Sales",
        x = "Principal Component 1",
        y = "Principal Component 2") +
   theme_minimal()
-
-
-
 ```
-
 ```{r}
-
-# Prepare data
-data$Year <- as.numeric(as.character(data$Year))
-data <- data[!is.na(data$Year), ]
-
-# Aggregate sales by year and genre
-genre_sales <- aggregate(Global_Sales ~ Year + Genre, data = data, sum)
-
-# Create visualization
-ggplot(genre_sales, aes(x = Year, y = Global_Sales, fill = Genre)) +
-  geom_area(alpha = 0.8) +
-  labs(title = "Genre Popularity Over Time",
-       x = "Year",
-       y = "Global Sales (in millions)") +
-  theme_minimal()
-
-
-```
-
-```{r}
-
-# Load libraries
-library(ggplot2)
-library(dplyr)
-library(tidyr)
-
-# Aggregate sales by platform and genre
-platform_genre_sales <- data %>%
-  group_by(Platform, Genre) %>%
-  summarise(Global_Sales = sum(Global_Sales, na.rm = TRUE)) %>%
-  ungroup()
-
-# Reshape data for heatmap
-heatmap_data <- platform_genre_sales %>%
-  pivot_wider(names_from = Genre, values_from = Global_Sales, values_fill = 0)
-
-# Convert to long format for ggplot
-heatmap_long <- heatmap_data %>%
-  pivot_longer(cols = -Platform, names_to = "Genre", values_to = "Sales")
-
-# Plot heatmap
-ggplot(heatmap_long, aes(x = Genre, y = Platform, fill = Sales)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient(low = "white", high = "blue") +
-  labs(title = "Heatmap of Global Sales by Platform and Genre",
-       x = "Genre",
-       y = "Platform",
-       fill = "Sales (in millions)") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-
-```
-
-```{r}
-
-# Load libraries
-library(Rtsne)
-library(ggplot2)
-library(dplyr)
-
-# Filter and prepare sales data
-sales_data <- data %>%
-  filter(complete.cases(NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales)) %>%
-  select(NA_Sales, EU_Sales, JP_Sales, Other_Sales, Global_Sales)
-
-# Subset data for t-SNE to avoid memory issues
+# UMAP
 set.seed(42)
-subset_data <- sales_data %>%
-  slice_sample(n = 500)
+umap_results <- umap(sales_data)
 
-# Perform t-SNE
-tsne_result <- Rtsne(as.matrix(subset_data), dims = 2, perplexity = 30, verbose = TRUE, max_iter = 500)
-
-# Prepare t-SNE data for plotting
-tsne_data <- data.frame(
-  Dim1 = tsne_result$Y[, 1],
-  Dim2 = tsne_result$Y[, 2],
-  Genre = data$Genre[1:nrow(subset_data)]
+umap_df <- data.frame(
+  Dim1 = umap_results$layout[,1],
+  Dim2 = umap_results$layout[,2],
+  Genre = vgsales$Genre[complete.cases(vgsales[, c("NA_Sales", "EU_Sales", "JP_Sales", "Other_Sales", "Global_Sales")])]
 )
 
-# Plot t-SNE results
-ggplot(tsne_data, aes(x = Dim1, y = Dim2, color = Genre)) +
+ggplot(umap_df, aes(x = Dim1, y = Dim2, color = Genre)) +
   geom_point(alpha = 0.7) +
-  labs(title = "t-SNE of Video Game Sales Across Regions",
+  labs(title = "UMAP Visualization of Video Game Sales Data",
        x = "Dimension 1",
        y = "Dimension 2") +
-  theme_minimal()
-
-
-
+  theme_minimal() +
+  theme(legend.position = "right")
 ```
